@@ -17,6 +17,12 @@ def get_db():
         db.close()
 
 @app.get("/titles", response_model=List[schemas.Title])
-def read_title(db: Session = Depends(get_db)):
-    title = crud.get_all(db)
+def read_titles(db: Session = Depends(get_db)):
+    titles = crud.get_titles(db)
+    return titles
+
+@app.get("/titles/{title_id}", response_model=schemas.Title)
+def read_title(title_id: int, db: Session = Depends(get_db)):
+    title = crud.get_title(db, title_id)
     return title
+
