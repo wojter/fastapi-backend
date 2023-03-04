@@ -3,10 +3,11 @@ from sqlalchemy.orm import relationship
 
 from .database import Base
 
+
 class Title(Base):
     __tablename__ = 'titles'
 
-    id = Column(Integer, primary_key=True)
+    id = Column(Integer, primary_key=True,  autoincrement=True, nullable=True)
     title = Column(String, unique=True)
     type = Column(String)
     description = Column(String)
