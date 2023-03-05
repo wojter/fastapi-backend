@@ -33,3 +33,11 @@ def create_title(movie: schemas.TitleCreate, db: Session = Depends(get_db)):
 @app.put("/titles/")
 def change_title(movie: schemas.Title, db: Session = Depends(get_db)):
     return crud.update_title(db, movie)
+
+@app.delete("/titles/{title_id}")
+def delete_title(title_id: int, db: Session = Depends(get_db)):
+    return crud.delete_movie(db, title_id)
+
+@app.get("/stats/")
+def read_stats(db: Session = Depends(get_db)):
+    return crud.get_stats(db)
