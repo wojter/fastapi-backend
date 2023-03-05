@@ -1,6 +1,5 @@
-from typing import List, Union
+from typing import Union
 from pydantic import BaseModel
-
 
 class TitleBase(BaseModel):
     title: str
@@ -9,10 +8,8 @@ class TitleBase(BaseModel):
     runtime: Union[int, None] = None
     release_year: Union[int, None] = None
 
-
 class TitleCreate(TitleBase):
     pass
-
 
 class Title(TitleBase):
     id: int
