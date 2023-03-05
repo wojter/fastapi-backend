@@ -29,3 +29,7 @@ def read_title(title_id: int, db: Session = Depends(get_db)):
 @app.post("/titles", response_model=schemas.Title)
 def create_title(movie: schemas.TitleCreate, db: Session = Depends(get_db)):
     return crud.create_title(db=db, movie=movie )
+
+@app.put("/titles/")
+def change_title(movie: schemas.Title, db: Session = Depends(get_db)):
+    return crud.update_title(db, movie)
