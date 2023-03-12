@@ -11,6 +11,10 @@ def get_title(db: Session, title_id: int):
     return db.query(models.Titles).filter(models.Titles.id == title_id).first()
 
 
+def get_titles_top(db: Session):
+    return db.query(models.Titles).limit(10).all()
+
+
 def create_title(db: Session, movie: schemas.TitleCreate):
     db_movie = models.Titles(**movie.dict())
     db.add(db_movie)

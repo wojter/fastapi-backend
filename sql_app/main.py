@@ -26,6 +26,11 @@ def read_title(title_id: int, db: Session = Depends(get_db)):
     title = crud.get_title(db, title_id)
     return title
 
+@app.get("/titles_top", response_model=List[schemas.Title])
+def read_titles_top(db: Session = Depends(get_db)):
+    titles = crud.get_titles_top(db)
+    return titles
+
 @app.post("/titles", response_model=schemas.Title)
 def create_title(movie: schemas.TitleCreate, db: Session = Depends(get_db)):
     return crud.create_title(db=db, movie=movie )
