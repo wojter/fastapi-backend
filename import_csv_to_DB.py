@@ -5,8 +5,8 @@ import csv
 if __name__ == "__main__":
     conn = psycopg2.connect(
         user='postgres',
-        password='1234',
-        port=5432,
+        password='admin',
+        port=5433,
         host='localhost',
         database='postgres')
     cur = conn.cursor()
