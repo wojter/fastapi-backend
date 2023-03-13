@@ -22,13 +22,17 @@ function App() {
   useEffect(() => {
     const fetchData = async () => {
       const data = await (
-         await fetch("http://127.0.0.1:8000/titles_top")
-      ).json()
-      console.log(data)
+        await fetch("http://127.0.0.1:8000/titles_top")
+      ).json();
       setTitles(data);
     };
     fetchData();
   }, []);
+
+  const fetchTitles = async () => {
+    const data = await (await fetch("http://127.0.0.1:8000/titles_top")).json();
+    setTitles(data);
+  };
 
   const fetchTitle = async (id) => {
     const response = await axios.get(`http://127.0.0.1:8000/titles/${id}`);
@@ -41,7 +45,7 @@ function App() {
       await axios.post(`http://127.0.0.1:8000/titles/`, title);
     }
     await fetchTitles();
-    await setTitle({
+    setTitle({
       id: 0,
       title: "",
       type: "",
