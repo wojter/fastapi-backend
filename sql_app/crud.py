@@ -12,7 +12,7 @@ def get_title(db: Session, title_id: int):
 
 
 def get_titles_top(db: Session):
-    return db.query(models.Titles).limit(10).all()
+    return db.query(models.Titles).limit(100).all()
 
 
 def create_title(db: Session, movie: schemas.TitleCreate):
