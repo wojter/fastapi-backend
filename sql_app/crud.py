@@ -44,4 +44,10 @@ def delete_movie(db: Session, title_id: int):
 def get_stats(db: Session):
     movie_shows_count = db.query(models.Titles.type, func.count(
         models.Titles.type)).group_by(models.Titles.type)
-    return movie_shows_count
+    title_avg_runtime_by_year = db.query(models.Titles.release_year, func.avg(
+        models.Titles.runtime)).group_by(models.Titles.release_year)
+    title_count_by_year = db.query(models.Titles.release_year, func.count(
+        models.Titles.id)).group_by(models.Titles.release_year)
+
+    return {"movies_genres": movie_shows_count, "avg_runtime_by_year": title_avg_runtime_by_year,
+            "count_title_by_rel_year": title_count_by_year}
