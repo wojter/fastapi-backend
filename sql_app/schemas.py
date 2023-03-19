@@ -16,3 +16,16 @@ class Title(TitleBase):
 
     class Config:
         orm_mode = True
+    
+class PersonBase(BaseModel):
+    person_id: int
+    title_id: int
+    name: str
+    character: Union[str, None] = None
+    role: str
+
+class Person(PersonBase):
+    id: int
+
+    class Config:
+        orm_mode = True
