@@ -1,8 +1,8 @@
 from typing import List
-from fastapi import Depends, FastAPI, HTTPException, status
+from fastapi import Depends, FastAPI, HTTPException, status, BackgroundTasks
 from sqlalchemy.orm import Session
 
-from . import crud, models, schemas
+from . import crud, models, schemas, additional
 from .database import SessionLocal, engine
 
 models.Base.metadata.create_all(bind=engine)
@@ -54,3 +54,15 @@ def delete_title(title_id: int, db: Session = Depends(get_db)):
 @app.get("/stats/")
 def read_stats(db: Session = Depends(get_db)):
     return crud.get_stats(db)
+
+@app.get("/title/and_log/{title_id}", response_model=schemas.Title)
+async def read_title_and_log(title_id: int, background_tasks: BackgroundTasks, db: Session = Depends(get_db)):
+    if title_id < 1:
+        raise HTTPException(status_code=400, detail="Wrong title id")
+    title = crud.get_title(db, title_id)
+    if title is None:
+        raise HTTPException(status_code=404, detail="Title not found")
+    background_tasks.add_task(additional.write_log_to_file, message=str(title_id))
+    return title
+
+
