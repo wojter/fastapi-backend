@@ -1,8 +1,8 @@
 from sqlalchemy import Boolean, Column, ForeignKey, Integer, String
-from sqlalchemy.orm import relationship
-
+from sqlalchemy.orm import relationship, declarative_base
 from .database import Base
 
+Base = declarative_base()
 
 class Titles(Base):
     __tablename__ = 'titles'
@@ -14,6 +14,7 @@ class Titles(Base):
     release_year = Column(Integer)
     runtime = Column(Integer)
 
+    people = relationship("Person", back_populates="title") #  primaryjoin="cast(Titles.id, Integer) == foreign(Person.title_id)",
 
 class Person(Base):
     __tablename__ = "credits"
@@ -24,3 +25,5 @@ class Person(Base):
     name = Column(String)
     character = Column(String)
     role = Column(String)
+
+    title = relationship("Titles", back_populates="people")

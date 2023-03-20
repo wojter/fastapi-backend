@@ -65,4 +65,13 @@ async def read_title_and_log(title_id: int, background_tasks: BackgroundTasks, d
     background_tasks.add_task(additional.write_log_to_file, message=str(title_id))
     return title
 
-
+@app.get("/title/with_people/{title_id}")
+def read_title_with_people(title_id: int, db: Session = Depends(get_db)):
+    if title_id < 1:
+        raise HTTPException(status_code=400, detail="Wrong title id")
+    title = crud.get_title_with_people(db, title_id)
+    if title is None:
+        raise HTTPException(status_code=404, detail="Title not found")    
+    if title.people == []:
+        raise HTTPException(status_code=404, detail="No people for this title")
+    return title

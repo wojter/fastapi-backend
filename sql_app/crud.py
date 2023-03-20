@@ -1,7 +1,7 @@
 from sqlalchemy.orm import Session
 from sqlalchemy import func
-from . import models, schemas
 
+from . import models, schemas
 
 def get_titles(db: Session):
     return db.query(models.Titles).all()
@@ -10,6 +10,13 @@ def get_titles(db: Session):
 def get_title(db: Session, title_id: int):
     return db.query(models.Titles).filter(models.Titles.id == title_id).first()
 
+def get_title_with_people(db: Session, title_id: int):
+    title = db.query(models.Titles).join(models.Person).filter(models.Titles.id == title_id).first()
+    if hasattr(title, 'people'):
+        t = title.people
+    else:
+        title = db.query(models.Titles).filter(models.Titles.id == title_id).first()
+    return title
 
 def get_titles_top(db: Session):
     return db.query(models.Titles).limit(10).all()
