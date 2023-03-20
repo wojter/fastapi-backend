@@ -59,7 +59,7 @@ if __name__ == "__main__":
     sql = '''CREATE TABLE credits(
         id SERIAL PRIMARY KEY,
         person_id int,
-        title_id varchar(10),
+        title_id int,
         name varchar(200),
         character varchar(1000),
         role varchar(30)
