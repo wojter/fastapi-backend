@@ -3,83 +3,39 @@ from fastapi import Depends, FastAPI, HTTPException, status, BackgroundTasks
 from sqlalchemy.orm import Session
 from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
 from typing_extensions import Annotated
-
-from . import crud, models, schemas, additional
-from .database import SessionLocal, engine
+import crud, models, schemas, additional, security
+from database import SessionLocal, engine
 
 models.Base.metadata.create_all(bind=engine)
 
 app = FastAPI()
 
-oauth2_scheme = OAuth2PasswordBearer(tokenUrl="token")
 
-fake_users_db = {
-    "johndoe": {
-        "username": "johndoe",
-        "full_name": "John Doe",
-        "email": "johndoe@example.com",
-        "hashed_password": "fakehashedsecret",
-        "disabled": False,
-    },
-    "alice": {
-        "username": "alice",
-        "full_name": "Alice Wonderson",
-        "email": "alice@example.com",
-        "hashed_password": "fakehashedsecret2",
-        "disabled": True,
-    },
-}
-
-
-def fake_hash_password(password: str):
-    return "fakehashed" + password
-
-
-def fake_decode_token(token):
-    return schemas.User(
-        username=token + "fakedecoded", email="wojter@example.com", full_name="Woj Tek"
-    )
-
-
-async def get_current_user(token: Annotated[str, Depends(oauth2_scheme)]):
-    user = fake_decode_token(token)
+@app.post("/token")
+async def login_for_access_token(form_data: Annotated[OAuth2PasswordRequestForm, Depends()]):
+    user = security.login_get_user(form_data)
     if not user:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Invalid authentication credentials",
-            headers={"WWW-Authenticate": "Bearer"},
+            detail="Incorrect username or password",
+            headers={"WWW-Authenticate": "Bearer"}
         )
-    return user
-
-
-async def get_current_active_user(current_user: Annotated[schemas.User, Depends(get_current_user)]):
-    if current_user.disabled:
-        raise HTTPException(status_code=400, detail="Inactive user")
-    return current_user
-
-
-@app.post("/token")
-async def login(form_data: Annotated[OAuth2PasswordRequestForm, Depends()]):
-    user_dict = fake_users_db.get(form_data.username)
-    if not user_dict:
-        raise HTTPException(
-            status_code=400, detail="Incorrect username or password")
-    user = schemas.UserInDB(**user_dict)
-    hashed_password = fake_hash_password(form_data.password)
-    if not hashed_password == user.hashed_password:
-        raise HTTPException(
-            status_code=400, detail="Incorrect username or password")
-
-    return {"access_token": user.username, "token_type": "bearer"}
+    access_token = security.login_for_acces_token(user)
+    return {"access_token": access_token, "token_type": "bearer"}
 
 
 @app.get("/users/me")
-async def read_users_me(current_user: Annotated[schemas.User, Depends(get_current_active_user)]):
+async def read_users_me(current_user: Annotated[schemas.User, Depends(security.get_current_active_user)]):
     return current_user
 
+@app.get("/users/me/items/")
+async def read_own_items(
+    current_user: Annotated[schemas.User, Depends(security.get_current_active_user)]
+):
+    return [{"item_id": "Foo", "owner": current_user.username}]
 
 @app.get("/items/")
-async def read_items(token: str = Depends(oauth2_scheme)):
+async def read_items(token: str = Depends(security.oauth2_scheme)):
     return {"token": token}
 
 
@@ -159,3 +115,7 @@ def read_title_with_people(title_id: int, db: Session = Depends(get_db)):
     if title.people == []:
         raise HTTPException(status_code=404, detail="No people for this title")
     return title
+
+if __name__ == "__main__":
+    import uvicorn
+    uvicorn.run(app, host="127.0.0.1", port=8000)

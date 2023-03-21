@@ -1,7 +1,7 @@
 from sqlalchemy.orm import Session
 from sqlalchemy import func
 
-from . import models, schemas
+import models, schemas
 
 def get_titles(db: Session):
     return db.query(models.Titles).all()
