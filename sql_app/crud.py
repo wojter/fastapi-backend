@@ -1,7 +1,10 @@
 from sqlalchemy.orm import Session
 from sqlalchemy import func
 
-import models, schemas
+import models
+import schemas
+from security import get_password_hash
+
 
 def get_titles(db: Session):
     return db.query(models.Titles).all()
@@ -10,13 +13,17 @@ def get_titles(db: Session):
 def get_title(db: Session, title_id: int):
     return db.query(models.Titles).filter(models.Titles.id == title_id).first()
 
+
 def get_title_with_people(db: Session, title_id: int):
-    title = db.query(models.Titles).join(models.Person).filter(models.Titles.id == title_id).first()
+    title = db.query(models.Titles).join(models.Person).filter(
+        models.Titles.id == title_id).first()
     if hasattr(title, 'people'):
         t = title.people
     else:
-        title = db.query(models.Titles).filter(models.Titles.id == title_id).first()
+        title = db.query(models.Titles).filter(
+            models.Titles.id == title_id).first()
     return title
+
 
 def get_titles_top(db: Session):
     return db.query(models.Titles).limit(10).all()
@@ -58,3 +65,17 @@ def get_stats(db: Session):
 
     return {"movies_genres": movie_shows_count, "avg_runtime_by_year": title_avg_runtime_by_year,
             "count_title_by_rel_year": title_count_by_year}
+
+
+def create_new_user(db: Session, user: schemas.UserCreate):
+    db_user = models.Users(
+        username=user.username,
+        email=user.email,
+        hashed_password=get_password_hash(user.password),
+        full_name=user.full_name,
+        disabled=False,
+    )
+    db.add(db_user)
+    db.commit()
+    db.refresh(db_user)
+    return db_user

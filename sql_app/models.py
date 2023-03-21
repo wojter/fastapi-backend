@@ -27,3 +27,12 @@ class Person(Base):
     role = Column(String)
 
     title = relationship("Titles", back_populates="people")
+
+class Users(Base):
+    __tablename__ = "users"
+
+    username = Column(String, primary_key=True)
+    email = Column(String, nullable=False, unique=True)
+    full_name = Column(String)
+    disabled = Column(Boolean, default=False)
+    hashed_password = Column(String, nullable=False)

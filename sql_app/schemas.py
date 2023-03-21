@@ -54,3 +54,9 @@ class Token(BaseModel):
 
 class TokenData(BaseModel):
     username: Union[str, None] = None
+
+class UserCreate(BaseModel):
+    username: str
+    email: str
+    password: str
+    full_name: str

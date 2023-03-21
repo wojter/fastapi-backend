@@ -10,7 +10,6 @@ models.Base.metadata.create_all(bind=engine)
 
 app = FastAPI()
 
-
 @app.post("/token")
 async def login_for_access_token(form_data: Annotated[OAuth2PasswordRequestForm, Depends()]):
     user = security.login_get_user(form_data)
@@ -116,6 +115,11 @@ def read_title_with_people(title_id: int, db: Session = Depends(get_db)):
         raise HTTPException(status_code=404, detail="No people for this title")
     return title
 
+@app.post("/users/")
+def create_new_user(user: schemas.UserCreate, db: Session = Depends(get_db)):
+    db_user = crud.create_new_user(db=db, user=user)
+    return db_user
+
 if __name__ == "__main__":
     import uvicorn
-    uvicorn.run(app, host="127.0.0.1", port=8000)
+    uvicorn.run(app, host="127.0.0.1", port=8000,)

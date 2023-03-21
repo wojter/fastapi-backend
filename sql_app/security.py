@@ -13,8 +13,6 @@ SECRET_KEY = os.environ["SECRET_KEY"]
 ALGORITHM = os.environ["ALGORITHM"]
 ACCESS_TOKEN_EXPIRE_MINUTES = os.environ["ACCESS_TOKEN_EXPIRE_MINUTES"]
 
-
-
 fake_users_db = {
     "johndoe": {
         "username": "johndoe",
