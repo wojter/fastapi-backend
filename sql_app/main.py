@@ -3,16 +3,30 @@ from fastapi import Depends, FastAPI, HTTPException, status, BackgroundTasks
 from sqlalchemy.orm import Session
 from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
 from typing_extensions import Annotated
-import crud, models, schemas, additional, security
+import crud
+import models
+import schemas
+import additional
+import security
 from database import SessionLocal, engine
 
 models.Base.metadata.create_all(bind=engine)
 
 app = FastAPI()
 
+
+def get_db():
+    db = SessionLocal()
+    try:
+        yield db
+    finally:
+        db.close()
+
+
 @app.post("/token")
-async def login_for_access_token(form_data: Annotated[OAuth2PasswordRequestForm, Depends()]):
-    user = security.login_get_user(form_data)
+async def login_for_access_token(form_data: Annotated[OAuth2PasswordRequestForm, Depends()],
+                                 db: Session = Depends(get_db)):
+    user = security.login_get_user(form_data, db)
     if not user:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
@@ -23,27 +37,30 @@ async def login_for_access_token(form_data: Annotated[OAuth2PasswordRequestForm,
     return {"access_token": access_token, "token_type": "bearer"}
 
 
-@app.get("/users/me")
-async def read_users_me(current_user: Annotated[schemas.User, Depends(security.get_current_active_user)]):
-    return current_user
+@app.get("/users/me", )
+async def read_users_me(username: Annotated[str, Depends(security.get_current_user)],
+                        db: Session = Depends(get_db)):
+    current_user = crud.get_user(db, username=username)
+    if current_user is None:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Could not validate credentials",
+            headers={"WWW-Authenticate": "Bearer"}
+        )
+    return security.get_current_active_user(current_user)
+
 
 @app.get("/users/me/items/")
 async def read_own_items(
-    current_user: Annotated[schemas.User, Depends(security.get_current_active_user)]
+    current_user: Annotated[schemas.User, Depends(
+        security.get_current_user)]
 ):
     return [{"item_id": "Foo", "owner": current_user.username}]
+
 
 @app.get("/items/")
 async def read_items(token: str = Depends(security.oauth2_scheme)):
     return {"token": token}
-
-
-def get_db():
-    db = SessionLocal()
-    try:
-        yield db
-    finally:
-        db.close()
 
 
 @app.get("/titles", response_model=List[schemas.Title])
@@ -115,10 +132,12 @@ def read_title_with_people(title_id: int, db: Session = Depends(get_db)):
         raise HTTPException(status_code=404, detail="No people for this title")
     return title
 
+
 @app.post("/users/")
 def create_new_user(user: schemas.UserCreate, db: Session = Depends(get_db)):
     db_user = crud.create_new_user(db=db, user=user)
     return db_user
+
 
 if __name__ == "__main__":
     import uvicorn

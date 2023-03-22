@@ -5,7 +5,6 @@ import models
 import schemas
 from security import get_password_hash
 
-
 def get_titles(db: Session):
     return db.query(models.Titles).all()
 
@@ -79,3 +78,10 @@ def create_new_user(db: Session, user: schemas.UserCreate):
     db.commit()
     db.refresh(db_user)
     return db_user
+
+def get_user(db: Session, username: str):
+    user = db.query(models.Users).filter(models.Users.username == username).first()
+    if user is None:
+        return None
+    else:
+        return user
