@@ -1,5 +1,5 @@
-from typing import List
-from fastapi import Depends, FastAPI, HTTPException, status, BackgroundTasks
+from typing import List, Union
+from fastapi import Depends, FastAPI, HTTPException, status, BackgroundTasks, File, UploadFile
 from sqlalchemy.orm import Session
 from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
 from typing_extensions import Annotated
@@ -137,6 +137,20 @@ def read_title_with_people(title_id: int, db: Session = Depends(get_db)):
 def create_new_user(user: schemas.UserCreate, db: Session = Depends(get_db)):
     db_user = crud.create_new_user(db=db, user=user)
     return db_user
+
+@app.post("/files/")
+async def create_file(file: Union[bytes, None] = File(default=None)):
+    if not file:
+        return {"message": "No file sent"}
+    else:
+        return {"file_size": len(file)}
+
+@app.post("/uploadfile/")
+async def create_upload_file(file: Union[UploadFile, None] = None):
+    if not file:
+        return {"message": "No upload file sent"}
+    else:
+        return {"filename": file.filename}
 
 
 if __name__ == "__main__":
